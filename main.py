@@ -11,6 +11,9 @@ WIN_WIDTH = 900
 WIN_HEIGHT = 800
 FPS = 40
 
+fon = pygame.image.load(file_path(r"image\fon.jpg"))
+fon = pygame.transform.scale(fon, (WIN_WIDTH, WIN_HEIGHT))
+
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
 clock = pygame.time.Clock()
@@ -25,9 +28,9 @@ while game:
         if event.type == pygame.QUIT:
             game = False
 
-if level == 1:
-    pass
+    if level == 1:
+        window.blit(fon, (0, 0))
 
 
-clock.tick(FPS)
-pygame.display.update()
+    clock.tick(FPS)
+    pygame.display.update()
