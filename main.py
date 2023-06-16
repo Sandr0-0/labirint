@@ -14,8 +14,14 @@ FPS = 40
 fon = pygame.image.load(file_path(r"image\fon.jpg"))
 fon = pygame.transform.scale(fon, (WIN_WIDTH, WIN_HEIGHT))
 
-window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+image_win = pygame.image.load(file_path(r"image\tron.jpg"))
+image_win = pygame.transform.scale(image_win, (WIN_WIDTH, WIN_HEIGHT))
 
+image_lose = pygame.image.load(file_path(r"image\tron.jpg"))
+image_win = pygame.transform.scale(image_win,(WIN_WIDTH, WIN_HEIGHT))
+
+
+window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 clock = pygame.time.Clock()
 
 class GameSprite(pygame.sprite.Sprite):
@@ -186,5 +192,13 @@ while game:
         portal1.show()
         item1.show()
         item2.show()
+
+        if pygame.sprite.collide_rect(player, goal):
+            level = 10
+
+    elif level == 10:
+        window.blit(image_win, (0, 0))
+
+
     clock.tick(FPS)
     pygame.display.update()
