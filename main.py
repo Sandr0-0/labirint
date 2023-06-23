@@ -11,6 +11,10 @@ WIN_WIDTH = 900
 WIN_HEIGHT = 800
 FPS = 40
 
+pygame.mixer.music.load(file_path(r"music\26eb2b766b3ccf2.mp3"))
+pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.play(-1)
+
 fon = pygame.image.load(file_path(r"image\fon.jpg"))
 fon = pygame.transform.scale(fon, (WIN_WIDTH, WIN_HEIGHT))
 
@@ -18,7 +22,7 @@ image_win = pygame.image.load(file_path(r"image\tron.jpg"))
 image_win = pygame.transform.scale(image_win, (WIN_WIDTH, WIN_HEIGHT))
 
 image_lose = pygame.image.load(file_path(r"image\tron.jpg"))
-image_win = pygame.transform.scale(image_win,(WIN_WIDTH, WIN_HEIGHT))
+image_lose = pygame.transform.scale(image_win,(WIN_WIDTH, WIN_HEIGHT))
 
 
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
@@ -47,20 +51,41 @@ class Player(GameSprite):
     def update(self):
         if self.speed_x < 0 and self.rect.left > 0 or self.speed_x > 0 and self.rect.right < WIN_WIDTH:
             self.rect.x += self.speed_x
+        walls_touched = pygame.sprite.spritecollide(self, walls, False)
+        if self.speed_x > 0:
+            for wall in walls_touched:
+               self.rect.right = min(self.rect.right, wall.rect.left) 
+        if self.speed_x < 0:
+            for wall in walls_touched:
+               self.rect.left = max(self.rect.left, wall.rect.right)
+
         if self.speed_y < 0 and self.rect.top > 0 or self.speed_y > 0 and self.rect.bottom < WIN_HEIGHT:
             self.rect.y += self.speed_y
 
+        walls_touched = pygame.sprite.spritecollide(self, walls, False)
+        if self.speed_y < 0:
+            for wall in walls_touched:
+                self.rect.top = max(self.rect.top, wall.rect.bottom)
+        if self.speed_y > 0:
+            for wall in walls_touched:
+                self.rect.bottom = min(self.rect.bottom, wall.rect.top)
+        
 
 
 
-player = Player(5, 5, 80, 100, r"image\pudge(6).png", 0, 0)
+
+player = Player(5, 5, 60, 70, r"image\pudge(6).png", 0, 0)
 enemy1 = GameSprite(620, 200 , 100, 150, r"image\huskar2(2).png")
 enemy2 = GameSprite(600, 10, 100, 100, r"image\rasta(1).png")
-goal = GameSprite(820, 40, 80, 80, r"image\tron2.png")
+goal = GameSprite(820, 1, 80, 80, r"image\tron2.png")
 portal1 = GameSprite(220, 140, 60, 60, r"image\portal1 — копия.png")
 portal2 = GameSprite(840, 220, 60, 60, r"image\portal2 — копия.png")
 item1 = GameSprite(840, 720, 60, 60, r"image\aghanim.png")
 item2 = GameSprite(730, 220, 70, 70, r"image\bkb.png")
+
+enemies = pygame.sprite.Group()
+enemies.add(enemy1)
+enemies.add(enemy2)
 
 walls = pygame.sprite.Group()
 wall1 = GameSprite(90, 0, 10, 650, r"image\WALL.png")
@@ -185,8 +210,7 @@ while game:
         walls.draw(window)
         player.show()
         player.update()
-        enemy1.show()
-        enemy2.show()
+        enemies.draw(window)
         goal.show()
         portal2.show()
         portal1.show()
@@ -195,10 +219,19 @@ while game:
 
         if pygame.sprite.collide_rect(player, goal):
             level = 10
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(file_path(r"music\a5230bf64dffcb6.mp3"))
+            pygame.mixer.music.play(-1)
 
+        if pygame.sprite.spritecollide(player, enemies, False):
+            level = 11
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(file_path(r"music\bfacb78306248c8.mp3"))
+            pygame.mixer.music.play(-1)
     elif level == 10:
         window.blit(image_win, (0, 0))
 
-
+    elif level == 11:
+        window.blit(image_lose, (0, 0))
     clock.tick(FPS)
     pygame.display.update()
