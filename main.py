@@ -71,12 +71,60 @@ class Player(GameSprite):
                 self.rect.bottom = min(self.rect.bottom, wall.rect.top)
         
 
+class Enemy(GameSprite):
+    def __init__(self, x, y, width, height, image, direction, min_coord, max_coord, speed):
+        super().__init__(x, y, width, height, image)
+        self.direction = direction
+        self.min_coord = min_coord
+        self.max_coord = max_coord
+        self.speed = speed
+
+        if self.direction == "right":
+            self.image_r = self.image
+            self.image_l = pygame.transform.flip(self.image, True, False)
+        
+        elif self.direction == "left":
+            self.image_l = self.image
+            self.image_r = pygame.transform.flip(self.image, True, False)
+
+
+
+    def update(self):
+        if self.direction == "left" or self.direction == "right":
+            if self.direction == "left":
+                self.rect.x -= self.speed
+
+            elif self.direction == "right":
+                self.rect.x += self.speed
+
+
+            if self.rect.right >= self.max_coord:
+                self.direction = "left"
+                self.image = self.image_l
+            if self.rect.right <=  self.min_coord:
+                self.direction = "right"
+                self.image = self.image_r
+
+        elif self.direction == "up" or self.direction == "down":
+            if self.direction == "up":
+                self.rect.y -= self.speed
+            elif self.direction == "down":
+                self.rect.y += self.speed
+
+            if self.rect.top <= self.min_coord:
+                self.direction = "down"
+            if self.rect.bottom >= self.max_coord:
+                self.direction = "up"
+
+
+
+
 
 
 
 player = Player(5, 5, 60, 70, r"image\pudge(6).png", 0, 0)
-enemy1 = GameSprite(620, 200 , 100, 150, r"image\huskar2(2).png")
-enemy2 = GameSprite(600, 10, 100, 100, r"image\rasta(1).png")
+enemy1 = Enemy(620, 200 , 100, 150, r"image\huskar2(2).png", "down", 100, 500, 5)
+enemy2 = Enemy(600, 10, 100, 100, r"image\rasta(1).png", "left", 600, 900, 5)
 goal = GameSprite(820, 1, 80, 80, r"image\tron2.png")
 portal1 = GameSprite(220, 140, 60, 60, r"image\portal1 — копия.png")
 portal2 = GameSprite(840, 220, 60, 60, r"image\portal2 — копия.png")
@@ -211,6 +259,7 @@ while game:
         player.show()
         player.update()
         enemies.draw(window)
+        enemies.update()
         goal.show()
         portal2.show()
         portal1.show()
