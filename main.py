@@ -11,9 +11,17 @@ WIN_WIDTH = 900
 WIN_HEIGHT = 800
 FPS = 40
 
-pygame.mixer.music.load(file_path(r"music\26eb2b766b3ccf2.mp3"))
+BLACK = (0, 0, 0)
+GRAY = (140, 143, 140)
+LIGHT_GREEN = (203, 242, 203)
+WHITE = (255, 255, 255)
+DARK = (77, 79, 77)
+
+pygame.mixer.music.load(file_path(r"music\bfacb78306248c8.mp3"))
 pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(-1)
+
+music_shoot = pygame.mixer.Sound(file_path(r"image\odinochnyiy-pistoletnyiy-vyistrel.ogg"))
 
 fon = pygame.image.load(file_path(r"image\fon.jpg"))
 fon = pygame.transform.scale(fon, (WIN_WIDTH, WIN_HEIGHT))
@@ -27,6 +35,26 @@ image_lose = pygame.transform.scale(image_win,(WIN_WIDTH, WIN_HEIGHT))
 
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 clock = pygame.time.Clock()
+
+
+
+class Button():
+    def __init__(self, x, y, width, height, color1, color2, text, text_color, text_x, text_y):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color1 = color1
+        self.color2 = color2
+        self.color = color1
+        shrift = pygame.font.SysFont("Comix Sans MS", 80)
+        self.text = shrift.render(text, True, text_color)
+        self.text_x = text_x
+        self.text_y = text_y
+
+    def show(self):
+        pygame.draw.rect(window, self.color, self.rect)
+        window.blit(self.text, (self.rect.x + self.text_x, self.rect.y + self.text_y ))
+
+
+
 
 class GameSprite(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, image):
@@ -47,6 +75,16 @@ class Player(GameSprite):
         self.direction = "right"
         self.image_r = self.image
         self.image_l = pygame.transform.flip(self.image, True, False)
+    
+
+    def shoot(self):
+        if self.direction == "right":
+            bullet = Bullet(self.rect.right, self.rect.centery, 20, 20, r"image\bullet.png", 8)
+        elif self.direction == "left":
+            bullet = Bullet(self.rect.left - 20, self.rect.centery, 20, 20, r"image\bullet.png", -8)
+            bullet.image = pygame.transform.flip(bullet.image, True, False)
+        bullets.add(bullet)
+
 
     def update(self):
         if self.speed_x < 0 and self.rect.left > 0 or self.speed_x > 0 and self.rect.right < WIN_WIDTH:
@@ -70,6 +108,21 @@ class Player(GameSprite):
             for wall in walls_touched:
                 self.rect.bottom = min(self.rect.bottom, wall.rect.top)
         
+
+class Bullet(GameSprite):
+    def __init__(self, x, y, width, height, image, speed):
+        super().__init__(x, y, width, height, image)
+        self.speed = speed
+
+    def update(self):
+        self.rect.x += self.speed
+        if self.rect.right >= WIN_WIDTH or self.rect.left <= 0:
+            self.kill()
+
+
+
+
+
 
 class Enemy(GameSprite):
     def __init__(self, x, y, width, height, image, direction, min_coord, max_coord, speed):
@@ -130,6 +183,10 @@ portal1 = GameSprite(220, 140, 60, 60, r"image\portal1 — копия.png")
 portal2 = GameSprite(840, 220, 60, 60, r"image\portal2 — копия.png")
 item1 = GameSprite(840, 720, 60, 60, r"image\aghanim.png")
 item2 = GameSprite(730, 220, 70, 70, r"image\bkb.png")
+
+bullets = pygame.sprite.Group()
+
+
 
 enemies = pygame.sprite.Group()
 enemies.add(enemy1)
@@ -209,6 +266,9 @@ walls.add(wall23)
 
 
 
+btn_start = Button(300, 200, 300, 100, GRAY, DARK, "S T A R T", WHITE, 30, 25)
+btn_exit = Button(300, 500, 300, 100, GRAY, DARK, "E X I T", WHITE, 65, 25)
+game_name = pygame.font.SysFont("Tahoma", 60, 1, 1).render("P u d g e   E s c a p e", True, WHITE)
 
 
 
@@ -219,16 +279,14 @@ walls.add(wall23)
 
 
 
-
-
-
-level = 1
+level = 0
 game = True
 
 while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
+
         if level == 1:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
@@ -243,6 +301,9 @@ while game:
                     player.speed_y = -5
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.speed_y = 5
+                if event.key == pygame.K_SPACE:
+                    player.shoot()
+                    music_shoot.play()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     player.speed_x = 0
@@ -252,6 +313,29 @@ while game:
                     player.speed_y = 0
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.speed_y = 0
+
+        elif level == 0:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if btn_start.rect.collidepoint(x, y):
+                    level = 1
+                    pygame.mixer.music.load(file_path(r"music\26eb2b766b3ccf2.mp3"))
+                    pygame.mixer.music.set_volume(0.1)
+                    pygame.mixer.music.play(-1)
+                elif btn_exit.rect.collidepoint(x, y):
+                    game = False
+            
+            if event.type == pygame.MOUSEMOTION:
+                x, y = event.pos
+                if btn_start.rect.collidepoint(x, y):
+                    btn_start.color = btn_start.color2
+
+                elif btn_exit.rect.collidepoint(x, y):
+                    btn_exit.color = btn_exit.color2
+
+                else:
+                    btn_exit.color = btn_exit.color1
+                    btn_start.color = btn_start.color1
 
     if level == 1:
         window.blit(fon, (0, 0))
@@ -265,7 +349,8 @@ while game:
         portal1.show()
         item1.show()
         item2.show()
-
+        bullets.draw(window)
+        bullets.update()
         if pygame.sprite.collide_rect(player, goal):
             level = 10
             pygame.mixer.music.stop()
@@ -277,6 +362,17 @@ while game:
             pygame.mixer.music.stop()
             pygame.mixer.music.load(file_path(r"music\bfacb78306248c8.mp3"))
             pygame.mixer.music.play(-1)
+
+        pygame.sprite.groupcollide(bullets, walls, True, False)
+        pygame.sprite.groupcollide(bullets, enemies, True, True)
+
+
+    elif level == 0:
+        window.fill(BLACK)
+        btn_start.show()
+        btn_exit.show()
+        window.blit(game_name, (100, 30))
+
     elif level == 10:
         window.blit(image_win, (0, 0))
 
